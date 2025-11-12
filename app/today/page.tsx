@@ -73,6 +73,15 @@ export default function TodaySchedulePage() {
       render: (team: string) => <Tag>{team}</Tag>,
     },
     {
+      title: 'Conf',
+      dataIndex: 'conf',
+      key: 'conf',
+      width: 180,
+      render: (conf: string) => (
+        <Text style={{ fontFamily: 'monospace', fontSize: 12 }}>{conf}</Text>
+      ),
+    },
+    {
       title: '開始時刻',
       dataIndex: 'scheduledStartTime',
       key: 'scheduledStartTime',

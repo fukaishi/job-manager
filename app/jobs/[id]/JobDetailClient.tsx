@@ -19,6 +19,12 @@ export function JobDetailClient({ job }: { job: Job }) {
       render: (text: string) => <span style={{ fontFamily: 'monospace' }}>{text}</span>,
     },
     {
+      title: 'Conf',
+      dataIndex: 'conf',
+      key: 'conf',
+      render: (text: string) => <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{text}</span>,
+    },
+    {
       title: '開始時刻',
       dataIndex: 'startTime',
       key: 'startTime',
