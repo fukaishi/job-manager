@@ -1,8 +1,17 @@
-import { Card, CardHeader } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+'use client';
+
+import { Card, Row, Col, Statistic, Alert, Typography, Tag, Progress, Button, Space } from 'antd';
+import {
+  SyncOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  PercentageOutlined,
+  PlayCircleOutlined,
+} from '@ant-design/icons';
 import { mockJobs, mockExecutionHistory } from '@/lib/mock-data';
 import Link from 'next/link';
+
+const { Title, Text, Paragraph } = Typography;
 
 export default function DashboardPage() {
   const runningJobs = mockJobs.filter(j => j.lastExecutionStatus === 'running').length;
@@ -11,237 +20,169 @@ export default function DashboardPage() {
   const errorRate = todayFailed / (todaySuccess + todayFailed) * 100;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">ダッシュボード</h1>
-        <p className="text-gray-600 mt-1">ジョブ管理システムの概要</p>
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ marginBottom: 8 }}>ダッシュボード</Title>
+        <Text type="secondary">ジョブ管理システムの概要</Text>
       </div>
 
       {/* KPIカード */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">🔄</span>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">実行中ジョブ</p>
-              <p className="text-2xl font-bold text-gray-900">{runningJobs}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">✅</span>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">本日の成功</p>
-              <p className="text-2xl font-bold text-gray-900">{todaySuccess}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">❌</span>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">本日の失敗</p>
-              <p className="text-2xl font-bold text-gray-900">{todayFailed}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">📊</span>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">エラー率</p>
-              <p className="text-2xl font-bold text-gray-900">{errorRate.toFixed(1)}%</p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 実行状況グラフ */}
-        <div className="lg:col-span-2">
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
-            <CardHeader title="実行状況トレンド" subtitle="過去7日間" />
-            <div className="h-64 flex items-end justify-between space-x-2">
-              {[65, 72, 68, 85, 78, 90, 82].map((height, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
-                  <div className="w-full flex flex-col justify-end h-full space-y-1">
-                    <div
-                      className="w-full bg-green-500 rounded-t"
-                      style={{ height: `${height}%` }}
-                    ></div>
-                    <div
-                      className="w-full bg-red-500 rounded-t"
-                      style={{ height: `${100 - height}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    11/{6 + i}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-center mt-4 space-x-4">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-green-500 rounded mr-2"></div>
-                <span className="text-sm text-gray-600">成功</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-red-500 rounded mr-2"></div>
-                <span className="text-sm text-gray-600">失敗</span>
-              </div>
-            </div>
+            <Statistic
+              title="実行中ジョブ"
+              value={runningJobs}
+              prefix={<SyncOutlined spin />}
+              valueStyle={{ color: '#1890ff' }}
+            />
           </Card>
-        </div>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="本日の成功"
+              value={todaySuccess}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: '#52c41a' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="本日の失敗"
+              value={todayFailed}
+              prefix={<CloseCircleOutlined />}
+              valueStyle={{ color: '#ff4d4f' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="エラー率"
+              value={errorRate.toFixed(1)}
+              suffix="%"
+              prefix={<PercentageOutlined />}
+              valueStyle={{ color: '#faad14' }}
+            />
+          </Card>
+        </Col>
+      </Row>
 
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         {/* アラート・通知 */}
-        <div>
-          <Card>
-            <CardHeader title="アラート・通知" />
-            <div className="space-y-3">
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-start">
-                  <span className="text-red-500 mr-2">🔴</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-red-900">実行失敗</p>
-                    <p className="text-xs text-red-700 mt-1">バックアップジョブが失敗しました</p>
-                    <p className="text-xs text-red-600 mt-1">2時間前</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-start">
-                  <span className="text-yellow-500 mr-2">⚠️</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-yellow-900">長時間実行中</p>
-                    <p className="text-xs text-yellow-700 mt-1">通知送信が予想より長く実行されています</p>
-                    <p className="text-xs text-yellow-600 mt-1">30分前</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-start">
-                  <span className="text-blue-500 mr-2">ℹ️</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-blue-900">スケジュール更新</p>
-                    <p className="text-xs text-blue-700 mt-1">レポート生成のスケジュールが変更されました</p>
-                    <p className="text-xs text-blue-600 mt-1">1日前</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <Col xs={24} lg={24}>
+          <Card title="アラート・通知" size="small">
+            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              <Alert
+                message="実行失敗"
+                description="バックアップジョブが失敗しました · 2時間前"
+                type="error"
+                showIcon
+              />
+              <Alert
+                message="長時間実行中"
+                description="通知送信が予想より長く実行されています · 30分前"
+                type="warning"
+                showIcon
+              />
+              <Alert
+                message="スケジュール更新"
+                description="レポート生成のスケジュールが変更されました · 1日前"
+                type="info"
+                showIcon
+              />
+            </Space>
           </Card>
-        </div>
-      </div>
+        </Col>
+      </Row>
 
       {/* よく使うジョブ */}
-      <Card>
-        <CardHeader
-          title="よく使うジョブ"
-          subtitle="最近実行したジョブ"
-          action={
-            <Link href="/jobs">
-              <Button variant="ghost" size="sm">すべて表示</Button>
-            </Link>
-          }
-        />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Card
+        title="よく使うジョブ"
+        extra={<Link href="/jobs"><Button type="link">すべて表示</Button></Link>}
+        style={{ marginBottom: 24 }}
+      >
+        <Row gutter={[16, 16]}>
           {mockJobs.slice(0, 6).map((job) => (
-            <div
-              key={job.id}
-              className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:shadow-md transition-all cursor-pointer"
-            >
-              <div className="flex items-start justify-between mb-2">
-                <h4 className="font-medium text-gray-900">{job.name}</h4>
-                <Badge variant={job.lastExecutionStatus === 'success' ? 'success' : job.lastExecutionStatus === 'failed' ? 'error' : 'warning'}>
-                  {job.lastExecutionStatus === 'success' ? '成功' : job.lastExecutionStatus === 'failed' ? '失敗' : '実行中'}
-                </Badge>
-              </div>
-              <p className="text-sm text-gray-500 mb-3">{job.description}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">{job.team}</span>
-                <Link href={`/jobs/${job.id}`}>
-                  <Button size="sm" variant="primary">実行</Button>
-                </Link>
-              </div>
-            </div>
+            <Col xs={24} md={12} lg={8} key={job.id}>
+              <Card
+                size="small"
+                hoverable
+                style={{ height: '100%' }}
+                extra={
+                  <Tag color={job.lastExecutionStatus === 'success' ? 'success' : job.lastExecutionStatus === 'failed' ? 'error' : 'processing'}>
+                    {job.lastExecutionStatus === 'success' ? '成功' : job.lastExecutionStatus === 'failed' ? '失敗' : '実行中'}
+                  </Tag>
+                }
+              >
+                <div style={{ marginBottom: 12 }}>
+                  <Title level={5} style={{ marginBottom: 4 }}>{job.name}</Title>
+                  <Paragraph ellipsis={{ rows: 2 }} type="secondary" style={{ marginBottom: 0 }}>
+                    {job.description}
+                  </Paragraph>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text type="secondary" style={{ fontSize: 12 }}>{job.team}</Text>
+                  <Link href={`/jobs/${job.id}`}>
+                    <Button type="primary" size="small" icon={<PlayCircleOutlined />}>実行</Button>
+                  </Link>
+                </div>
+              </Card>
+            </Col>
           ))}
-        </div>
+        </Row>
       </Card>
 
-      {/* チーム別実行数 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader title="チーム別実行数" subtitle="本日の実行数" />
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-gray-700">開発チーム</span>
-                <span className="text-sm font-bold text-gray-900">24</span>
+      {/* チーム別実行数と次回実行予定 */}
+      <Row gutter={[16, 16]}>
+        <Col xs={24} lg={12}>
+          <Card title="チーム別実行数" extra={<Text type="secondary">本日の実行数</Text>}>
+            <Space direction="vertical" style={{ width: '100%' }} size="large">
+              <div>
+                <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                  <Text strong>開発チーム</Text>
+                  <Text strong>24</Text>
+                </div>
+                <Progress percent={80} strokeColor="#1890ff" />
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '80%' }}></div>
+              <div>
+                <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                  <Text strong>営業チーム</Text>
+                  <Text strong>18</Text>
+                </div>
+                <Progress percent={60} strokeColor="#52c41a" />
               </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-gray-700">営業チーム</span>
-                <span className="text-sm font-bold text-gray-900">18</span>
+              <div>
+                <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                  <Text strong>インフラチーム</Text>
+                  <Text strong>12</Text>
+                </div>
+                <Progress percent={40} strokeColor="#722ed1" />
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: '60%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-gray-700">インフラチーム</span>
-                <span className="text-sm font-bold text-gray-900">12</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-purple-500 h-2 rounded-full" style={{ width: '40%' }}></div>
-              </div>
-            </div>
-          </div>
-        </Card>
+            </Space>
+          </Card>
+        </Col>
 
-        <Card>
-          <CardHeader title="次回実行予定" subtitle="今後24時間以内" />
-          <div className="space-y-3">
-            {mockJobs.slice(0, 5).map((job) => (
-              <div key={job.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{job.name}</p>
-                  <p className="text-xs text-gray-500">{job.team}</p>
+        <Col xs={24} lg={12}>
+          <Card title="次回実行予定" extra={<Text type="secondary">今後24時間以内</Text>}>
+            <Space direction="vertical" style={{ width: '100%' }} size="small">
+              {mockJobs.slice(0, 5).map((job) => (
+                <div key={job.id} style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <Text strong>{job.name}</Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: 12 }}>{job.team}</Text>
+                  </div>
+                  <Text type="secondary">{job.nextExecutionTime}</Text>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-700">{job.nextExecutionTime}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
+              ))}
+            </Space>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 }

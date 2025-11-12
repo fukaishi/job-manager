@@ -1,230 +1,191 @@
 'use client';
 
-import { Card, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Card, Button, Typography, Row, Col, Table, Checkbox, Input, Space, Statistic } from 'antd';
+import { TeamOutlined, FileTextOutlined } from '@ant-design/icons';
 import { mockTeams } from '@/lib/mock-data';
 import { useState } from 'react';
+
+const { Title, Text } = Typography;
 
 export default function TeamsPage() {
   const [selectedTeam, setSelectedTeam] = useState(mockTeams[0]);
 
+  const memberColumns = [
+    {
+      title: '名前',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'メールアドレス',
+      dataIndex: 'email',
+      key: 'email',
+    },
+    {
+      title: '権限',
+      dataIndex: 'role',
+      key: 'role',
+    },
+    {
+      title: 'アクション',
+      key: 'action',
+      render: () => (
+        <Space>
+          <Button type="link" size="small">
+            編集
+          </Button>
+          <Button type="link" size="small" danger>
+            削除
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
+  const memberData = [
+    { key: '1', name: '山田太郎', email: 'yamada@example.com', role: 'エンジニア' },
+    { key: '2', name: '佐藤花子', email: 'sato@example.com', role: 'エンジニア' },
+    { key: '3', name: '鈴木一郎', email: 'suzuki@example.com', role: '管理者' },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div style={{ padding: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">チーム管理</h1>
-          <p className="text-gray-600 mt-1">チームとメンバーを管理</p>
+          <Title level={2} style={{ margin: 0 }}>
+            チーム管理
+          </Title>
+          <Text type="secondary">チームとメンバーを管理</Text>
         </div>
-        <Button>+ 新規チーム</Button>
+        <Button type="primary">+ 新規チーム</Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Row gutter={24}>
         {/* チーム一覧 */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader title="チーム一覧" />
-            <div className="space-y-2">
+        <Col xs={24} lg={8}>
+          <Card title="チーム一覧">
+            <Space direction="vertical" style={{ width: '100%' }} size="middle">
               {mockTeams.map((team) => (
-                <div
+                <Card
                   key={team.id}
+                  hoverable
                   onClick={() => setSelectedTeam(team)}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                    selectedTeam.id === team.id
-                      ? 'bg-primary-50 border-2 border-primary-500'
-                      : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-                  }`}
+                  style={{
+                    cursor: 'pointer',
+                    borderColor: selectedTeam.id === team.id ? '#1890ff' : '#d9d9d9',
+                    borderWidth: selectedTeam.id === team.id ? 2 : 1,
+                    backgroundColor: selectedTeam.id === team.id ? '#e6f7ff' : 'white',
+                  }}
                 >
-                  <h3 className="font-semibold text-gray-900">{team.name}</h3>
-                  <div className="flex items-center justify-between mt-2 text-sm text-gray-600">
-                    <span>👥 {team.memberCount}人</span>
-                    <span>📋 {team.jobCount}ジョブ</span>
+                  <Title level={5} style={{ margin: 0, marginBottom: '8px' }}>
+                    {team.name}
+                  </Title>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Text type="secondary">
+                      <TeamOutlined /> {team.memberCount}人
+                    </Text>
+                    <Text type="secondary">
+                      <FileTextOutlined /> {team.jobCount}ジョブ
+                    </Text>
                   </div>
-                </div>
+                </Card>
               ))}
-            </div>
+            </Space>
           </Card>
-        </div>
+        </Col>
 
         {/* チーム詳細 */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">{selectedTeam.name}</h2>
-                <p className="text-gray-600">チームID: {selectedTeam.id}</p>
+        <Col xs={24} lg={16}>
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                  <Title level={3} style={{ margin: 0 }}>
+                    {selectedTeam.name}
+                  </Title>
+                  <Text type="secondary">チームID: {selectedTeam.id}</Text>
+                </div>
+                <Space>
+                  <Button>編集</Button>
+                  <Button danger>削除</Button>
+                </Space>
               </div>
-              <div className="flex space-x-2">
-                <Button variant="secondary" size="sm">
-                  編集
-                </Button>
-                <Button variant="danger" size="sm">
-                  削除
-                </Button>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-3 gap-4 mt-6">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-600 font-medium">メンバー数</p>
-                <p className="text-3xl font-bold text-blue-900">{selectedTeam.memberCount}</p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-green-600 font-medium">管理ジョブ数</p>
-                <p className="text-3xl font-bold text-green-900">{selectedTeam.jobCount}</p>
-              </div>
-              <div className="p-4 bg-purple-50 rounded-lg">
-                <p className="text-sm text-purple-600 font-medium">実行中</p>
-                <p className="text-3xl font-bold text-purple-900">2</p>
-              </div>
-            </div>
-          </Card>
+              <Row gutter={16} style={{ marginTop: '24px' }}>
+                <Col xs={24} sm={8}>
+                  <Card style={{ backgroundColor: '#e6f7ff', borderColor: '#1890ff' }}>
+                    <Statistic title="メンバー数" value={selectedTeam.memberCount} valueStyle={{ color: '#1890ff' }} />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={8}>
+                  <Card style={{ backgroundColor: '#f6ffed', borderColor: '#52c41a' }}>
+                    <Statistic title="管理ジョブ数" value={selectedTeam.jobCount} valueStyle={{ color: '#52c41a' }} />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={8}>
+                  <Card style={{ backgroundColor: '#f9f0ff', borderColor: '#722ed1' }}>
+                    <Statistic title="実行中" value={2} valueStyle={{ color: '#722ed1' }} />
+                  </Card>
+                </Col>
+              </Row>
+            </Card>
 
-          <Card>
-            <CardHeader
+            <Card
               title="メンバー一覧"
-              action={
-                <Button size="sm" variant="secondary">
+              extra={
+                <Button type="primary" size="small">
                   + メンバー追加
                 </Button>
               }
-            />
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      名前
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      メールアドレス
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      権限
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      アクション
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {[
-                    {
-                      name: '山田太郎',
-                      email: 'yamada@example.com',
-                      role: 'エンジニア',
-                    },
-                    {
-                      name: '佐藤花子',
-                      email: 'sato@example.com',
-                      role: 'エンジニア',
-                    },
-                    {
-                      name: '鈴木一郎',
-                      email: 'suzuki@example.com',
-                      role: '管理者',
-                    },
-                  ].map((member, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                        {member.name}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{member.email}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{member.role}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="ghost">
-                            編集
-                          </Button>
-                          <Button size="sm" variant="ghost">
-                            削除
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+            >
+              <Table columns={memberColumns} dataSource={memberData} pagination={false} />
+            </Card>
 
-          <Card>
-            <CardHeader title="権限設定" />
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">エンジニア</h4>
-                <div className="space-y-2 pl-4">
-                  <label className="flex items-center">
-                    <input type="checkbox" defaultChecked className="mr-2" />
-                    <span className="text-sm text-gray-700">ジョブの作成・編集・削除</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" defaultChecked className="mr-2" />
-                    <span className="text-sm text-gray-700">ジョブの実行</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" defaultChecked className="mr-2" />
-                    <span className="text-sm text-gray-700">ログの閲覧</span>
-                  </label>
+            <Card title="権限設定">
+              <Space direction="vertical" style={{ width: '100%' }} size="large">
+                <div>
+                  <Title level={5}>エンジニア</Title>
+                  <Space direction="vertical" style={{ paddingLeft: '16px' }}>
+                    <Checkbox defaultChecked>ジョブの作成・編集・削除</Checkbox>
+                    <Checkbox defaultChecked>ジョブの実行</Checkbox>
+                    <Checkbox defaultChecked>ログの閲覧</Checkbox>
+                  </Space>
                 </div>
-              </div>
 
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">営業</h4>
-                <div className="space-y-2 pl-4">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" />
-                    <span className="text-sm text-gray-700">ジョブの作成・編集・削除</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" defaultChecked className="mr-2" />
-                    <span className="text-sm text-gray-700">ジョブの実行</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" defaultChecked className="mr-2" />
-                    <span className="text-sm text-gray-700">ログの閲覧</span>
-                  </label>
+                <div>
+                  <Title level={5}>営業</Title>
+                  <Space direction="vertical" style={{ paddingLeft: '16px' }}>
+                    <Checkbox>ジョブの作成・編集・削除</Checkbox>
+                    <Checkbox defaultChecked>ジョブの実行</Checkbox>
+                    <Checkbox defaultChecked>ログの閲覧</Checkbox>
+                  </Space>
                 </div>
-              </div>
-            </div>
-          </Card>
+              </Space>
+            </Card>
 
-          <Card>
-            <CardHeader title="通知設定" />
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Slackチャンネル
-                </label>
-                <input
-                  type="text"
-                  defaultValue="#dev-alerts"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  メール通知先
-                </label>
-                <input
-                  type="email"
-                  defaultValue="dev-team@example.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              <div className="flex items-center space-x-4">
-                <label className="flex items-center">
-                  <input type="checkbox" defaultChecked className="mr-2" />
-                  <span className="text-sm text-gray-700">ジョブ失敗時に通知</span>
-                </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" />
-                  <span className="text-sm text-gray-700">ジョブ成功時に通知</span>
-                </label>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
+            <Card title="通知設定">
+              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                    Slackチャンネル
+                  </Text>
+                  <Input defaultValue="#dev-alerts" />
+                </div>
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                    メール通知先
+                  </Text>
+                  <Input type="email" defaultValue="dev-team@example.com" />
+                </div>
+                <Space>
+                  <Checkbox defaultChecked>ジョブ失敗時に通知</Checkbox>
+                  <Checkbox>ジョブ成功時に通知</Checkbox>
+                </Space>
+              </Space>
+            </Card>
+          </Space>
+        </Col>
+      </Row>
     </div>
   );
 }

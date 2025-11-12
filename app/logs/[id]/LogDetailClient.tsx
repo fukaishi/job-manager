@@ -1,192 +1,262 @@
 'use client';
 
-import { Card, CardHeader } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Card, Tag, Button, Typography, Input, Tabs, Space, Row, Col } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 import { ExecutionHistory, mockExecutionHistory, mockLogs } from '@/lib/mock-data';
 import { useState } from 'react';
+
+const { Title, Text } = Typography;
 
 export function LogDetailClient({ execution }: { execution: ExecutionHistory }) {
   const [activeTab, setActiveTab] = useState('stdout');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const tabItems = [
+    {
+      key: 'stdout',
+      label: '標準出力',
+      children: (
+        <div
+          style={{
+            backgroundColor: '#1f1f1f',
+            color: '#52c41a',
+            padding: '16px',
+            borderRadius: '8px',
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            overflowX: 'auto',
+            maxHeight: '400px',
+            overflowY: 'auto',
+          }}
+        >
+          <pre style={{ margin: 0 }}>{mockLogs}</pre>
+        </div>
+      ),
+    },
+    {
+      key: 'stderr',
+      label: '標準エラー出力',
+      children: (
+        <div
+          style={{
+            backgroundColor: '#1f1f1f',
+            color: '#ff4d4f',
+            padding: '16px',
+            borderRadius: '8px',
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            overflowX: 'auto',
+            maxHeight: '400px',
+            overflowY: 'auto',
+          }}
+        >
+          <pre style={{ margin: 0 }}>エラー出力はありません</pre>
+        </div>
+      ),
+    },
+    {
+      key: 'system',
+      label: 'システムログ',
+      children: (
+        <div
+          style={{
+            backgroundColor: '#1f1f1f',
+            color: '#d9d9d9',
+            padding: '16px',
+            borderRadius: '8px',
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            overflowX: 'auto',
+            maxHeight: '400px',
+            overflowY: 'auto',
+          }}
+        >
+          <pre style={{ margin: 0 }}>{`[2025-11-12 02:00:00] SYSTEM: Job execution started
+[2025-11-12 02:00:00] SYSTEM: Environment loaded
+[2025-11-12 02:00:00] SYSTEM: Starting process
+[2025-11-12 02:15:23] SYSTEM: Process completed with exit code 0`}</pre>
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className="space-y-6">
+    <div style={{ padding: '24px' }}>
       {/* ヘッダー情報 */}
-      <Card>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <p className="text-sm font-medium text-gray-500">実行ID</p>
-            <p className="text-lg font-mono font-bold text-gray-900">{execution.id}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">ジョブ名</p>
-            <p className="text-lg font-semibold text-gray-900">{execution.jobName}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">実行時間</p>
-            <p className="text-lg text-gray-900">
+      <Card style={{ marginBottom: '24px' }}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={6}>
+            <Text type="secondary" style={{ display: 'block', fontSize: '14px' }}>
+              実行ID
+            </Text>
+            <Text strong style={{ fontSize: '18px', fontFamily: 'monospace' }}>
+              {execution.id}
+            </Text>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Text type="secondary" style={{ display: 'block', fontSize: '14px' }}>
+              ジョブ名
+            </Text>
+            <Text strong style={{ fontSize: '18px' }}>
+              {execution.jobName}
+            </Text>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Text type="secondary" style={{ display: 'block', fontSize: '14px' }}>
+              実行時間
+            </Text>
+            <Text strong style={{ fontSize: '18px' }}>
               {execution.duration > 0
                 ? `${Math.floor(execution.duration / 60)}分${execution.duration % 60}秒`
                 : '-'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">ステータス</p>
-            <div className="mt-1">
-              <Badge
-                variant={
-                  execution.status === 'success'
-                    ? 'success'
-                    : execution.status === 'failed'
-                    ? 'error'
-                    : 'warning'
-                }
-              >
-                {execution.status === 'success' ? '成功' : execution.status === 'failed' ? '失敗' : '実行中'}
-              </Badge>
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm font-medium text-gray-500">開始時刻</p>
-            <p className="text-sm text-gray-900">{execution.startTime}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">終了時刻</p>
-            <p className="text-sm text-gray-900">{execution.endTime || '-'}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">実行者</p>
-            <p className="text-sm text-gray-900">{execution.executor}</p>
-          </div>
+            </Text>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Text type="secondary" style={{ display: 'block', fontSize: '14px', marginBottom: '4px' }}>
+              ステータス
+            </Text>
+            <Tag
+              color={
+                execution.status === 'success'
+                  ? 'success'
+                  : execution.status === 'failed'
+                  ? 'error'
+                  : 'processing'
+              }
+            >
+              {execution.status === 'success' ? '成功' : execution.status === 'failed' ? '失敗' : '実行中'}
+            </Tag>
+          </Col>
+        </Row>
+        <div
+          style={{
+            marginTop: '16px',
+            paddingTop: '16px',
+            borderTop: '1px solid #f0f0f0',
+          }}
+        >
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={8}>
+              <Text type="secondary" style={{ display: 'block', fontSize: '14px' }}>
+                開始時刻
+              </Text>
+              <Text>{execution.startTime}</Text>
+            </Col>
+            <Col xs={24} sm={8}>
+              <Text type="secondary" style={{ display: 'block', fontSize: '14px' }}>
+                終了時刻
+              </Text>
+              <Text>{execution.endTime || '-'}</Text>
+            </Col>
+            <Col xs={24} sm={8}>
+              <Text type="secondary" style={{ display: 'block', fontSize: '14px' }}>
+                実行者
+              </Text>
+              <Text>{execution.executor}</Text>
+            </Col>
+          </Row>
         </div>
       </Card>
 
       {/* 検索バー */}
-      <div className="flex items-center space-x-4">
-        <div className="flex-1">
-          <input
-            type="search"
-            placeholder="ログを検索..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
-        <Button variant="secondary">ダウンロード</Button>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+        <Input.Search
+          placeholder="ログを検索..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ flex: 1 }}
+        />
+        <Button icon={<DownloadOutlined />}>ダウンロード</Button>
       </div>
 
       {/* ログ表示エリア */}
-      <Card>
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab('stdout')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'stdout'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              標準出力
-            </button>
-            <button
-              onClick={() => setActiveTab('stderr')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'stderr'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              標準エラー出力
-            </button>
-            <button
-              onClick={() => setActiveTab('system')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'system'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              システムログ
-            </button>
-          </nav>
-        </div>
-
-        <div className="mt-4">
-          {activeTab === 'stdout' && (
-            <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto max-h-96 overflow-y-auto">
-              <pre>{mockLogs}</pre>
-            </div>
-          )}
-          {activeTab === 'stderr' && (
-            <div className="bg-gray-900 text-red-400 p-4 rounded-lg font-mono text-sm overflow-x-auto max-h-96 overflow-y-auto">
-              <pre>エラー出力はありません</pre>
-            </div>
-          )}
-          {activeTab === 'system' && (
-            <div className="bg-gray-900 text-gray-300 p-4 rounded-lg font-mono text-sm overflow-x-auto max-h-96 overflow-y-auto">
-              <pre>{`[2025-11-12 02:00:00] SYSTEM: Job execution started
-[2025-11-12 02:00:00] SYSTEM: Environment loaded
-[2025-11-12 02:00:00] SYSTEM: Starting process
-[2025-11-12 02:15:23] SYSTEM: Process completed with exit code 0`}</pre>
-            </div>
-          )}
-        </div>
+      <Card style={{ marginBottom: '24px' }}>
+        <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
       </Card>
 
       {/* 関連情報 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader title="同じジョブの直近実行" />
-          <div className="space-y-2">
-            {mockExecutionHistory.slice(0, 3).map((history) => (
-              <div
-                key={history.id}
-                className="flex items-center justify-between p-2 border border-gray-200 rounded hover:bg-gray-50"
-              >
-                <div>
-                  <p className="text-sm font-mono text-gray-900">{history.id}</p>
-                  <p className="text-xs text-gray-500">{history.startTime}</p>
-                </div>
-                <Badge
-                  variant={
-                    history.status === 'success'
-                      ? 'success'
-                      : history.status === 'failed'
-                      ? 'error'
-                      : 'warning'
-                  }
+      <Row gutter={[24, 24]}>
+        <Col xs={24} lg={12}>
+          <Card title="同じジョブの直近実行">
+            <Space direction="vertical" style={{ width: '100%' }} size="small">
+              {mockExecutionHistory.slice(0, 3).map((history) => (
+                <div
+                  key={history.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '8px',
+                    border: '1px solid #f0f0f0',
+                    borderRadius: '8px',
+                  }}
                 >
-                  {history.status === 'success' ? '成功' : history.status === 'failed' ? '失敗' : '実行中'}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </Card>
+                  <div>
+                    <Text strong style={{ fontFamily: 'monospace', display: 'block' }}>
+                      {history.id}
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      {history.startTime}
+                    </Text>
+                  </div>
+                  <Tag
+                    color={
+                      history.status === 'success'
+                        ? 'success'
+                        : history.status === 'failed'
+                        ? 'error'
+                        : 'processing'
+                    }
+                  >
+                    {history.status === 'success' ? '成功' : history.status === 'failed' ? '失敗' : '実行中'}
+                  </Tag>
+                </div>
+              ))}
+            </Space>
+          </Card>
+        </Col>
 
-        <Card>
-          <CardHeader title="関連ジョブの実行状況" />
-          <div className="space-y-2">
-            <div className="p-3 border border-gray-200 rounded">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-900">データ取得ジョブ</p>
-                <Badge variant="success">完了</Badge>
+        <Col xs={24} lg={12}>
+          <Card title="関連ジョブの実行状況">
+            <Space direction="vertical" style={{ width: '100%' }} size="small">
+              <div
+                style={{
+                  padding: '12px',
+                  border: '1px solid #f0f0f0',
+                  borderRadius: '8px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text strong style={{ display: 'block' }}>
+                    データ取得ジョブ
+                  </Text>
+                  <Tag color="success">完了</Tag>
+                </div>
+                <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
+                  先行ジョブ
+                </Text>
               </div>
-              <p className="text-xs text-gray-500 mt-1">先行ジョブ</p>
-            </div>
-            <div className="p-3 border border-gray-200 rounded">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-900">レポート生成</p>
-                <Badge variant="warning">待機中</Badge>
+              <div
+                style={{
+                  padding: '12px',
+                  border: '1px solid #f0f0f0',
+                  borderRadius: '8px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text strong style={{ display: 'block' }}>
+                    レポート生成
+                  </Text>
+                  <Tag color="processing">待機中</Tag>
+                </div>
+                <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
+                  後続ジョブ
+                </Text>
               </div>
-              <p className="text-xs text-gray-500 mt-1">後続ジョブ</p>
-            </div>
-          </div>
-        </Card>
-      </div>
+            </Space>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 }

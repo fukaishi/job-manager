@@ -2,60 +2,81 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { Layout, Menu, Avatar, Typography } from 'antd';
+import {
+  DashboardOutlined,
+  UnorderedListOutlined,
+  HistoryOutlined,
+  SyncOutlined,
+  CalendarOutlined,
+  TeamOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
+
+const { Sider } = Layout;
+const { Title, Text } = Typography;
 
 const navigation = [
-  { name: 'ダッシュボード', href: '/dashboard', icon: '📊' },
-  { name: 'ジョブ一覧', href: '/jobs', icon: '📋' },
-  { name: '実行履歴', href: '/history', icon: '📜' },
-  { name: '実行中ジョブ', href: '/monitoring', icon: '🔄' },
-  { name: 'スケジュール', href: '/schedule', icon: '📅' },
-  { name: 'チーム管理', href: '/teams', icon: '👥' },
-  { name: '設定', href: '/settings', icon: '⚙️' },
+  { name: 'ダッシュボード', href: '/dashboard', icon: <DashboardOutlined /> },
+  { name: 'ジョブ一覧', href: '/jobs', icon: <UnorderedListOutlined /> },
+  { name: '実行履歴', href: '/history', icon: <HistoryOutlined /> },
+  { name: '実行中ジョブ', href: '/monitoring', icon: <SyncOutlined /> },
+  { name: 'スケジュール', href: '/schedule', icon: <CalendarOutlined /> },
+  { name: 'チーム管理', href: '/teams', icon: <TeamOutlined /> },
+  { name: '設定', href: '/settings', icon: <SettingOutlined /> },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
+  const menuItems = navigation.map((item) => ({
+    key: item.href,
+    icon: item.icon,
+    label: <Link href={item.href}>{item.name}</Link>,
+  }));
+
+  const selectedKey = navigation.find(item =>
+    pathname === item.href || pathname.startsWith(item.href + '/')
+  )?.href || '/dashboard';
+
   return (
-    <div className="w-64 border-r bg-card flex flex-col h-screen">
-      <div className="p-6 border-b">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+    <Sider
+      width={250}
+      style={{
+        overflow: 'auto',
+        height: '100vh',
+        position: 'sticky',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        background: '#fff',
+      }}
+    >
+      <div style={{ padding: '24px 16px', borderBottom: '1px solid #f0f0f0' }}>
+        <Title level={4} style={{ margin: 0, background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
           ジョブ管理ツール
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1">Job Management System</p>
+        </Title>
+        <Text type="secondary" style={{ fontSize: 12 }}>Job Management System</Text>
       </div>
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all',
-                isActive
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              )}
-            >
-              <span className="text-xl">{item.icon}</span>
-              <span>{item.name}</span>
-            </Link>
-          );
-        })}
-      </nav>
-      <div className="p-4 border-t bg-muted/50">
-        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-primary-foreground font-bold text-sm shadow-md">
+
+      <Menu
+        mode="inline"
+        selectedKeys={[selectedKey]}
+        items={menuItems}
+        style={{ borderRight: 0, marginTop: 8 }}
+      />
+
+      <div style={{ position: 'absolute', bottom: 0, width: '100%', borderTop: '1px solid #f0f0f0', padding: 16, background: '#fafafa' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Avatar size={40} style={{ background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)' }}>
             山
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">山田太郎</p>
-            <p className="text-xs text-muted-foreground">エンジニア</p>
+          </Avatar>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 500 }}>山田太郎</div>
+            <Text type="secondary" style={{ fontSize: 12 }}>エンジニア</Text>
           </div>
         </div>
       </div>
-    </div>
+    </Sider>
   );
 }

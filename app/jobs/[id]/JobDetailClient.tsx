@@ -1,350 +1,517 @@
 'use client';
 
-import { Card, CardHeader } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Card, Tag, Button, Typography, Tabs, Checkbox, Table, Space, Row, Col, Progress } from 'antd';
 import { Job, mockExecutionHistory } from '@/lib/mock-data';
 import Link from 'next/link';
 import { useState } from 'react';
+
+const { Title, Text } = Typography;
 
 export function JobDetailClient({ job }: { job: Job }) {
   const [activeTab, setActiveTab] = useState('basic');
   const jobHistory = mockExecutionHistory.filter((h) => h.jobId === job.id);
 
-  const tabs = [
-    { id: 'basic', label: '基本情報' },
-    { id: 'schedule', label: 'スケジュール' },
-    { id: 'dependencies', label: '依存関係' },
-    { id: 'history', label: '実行履歴' },
-    { id: 'stats', label: '統計' },
+  const historyColumns = [
+    {
+      title: '実行ID',
+      dataIndex: 'id',
+      key: 'id',
+      render: (text: string) => <span style={{ fontFamily: 'monospace' }}>{text}</span>,
+    },
+    {
+      title: '開始時刻',
+      dataIndex: 'startTime',
+      key: 'startTime',
+    },
+    {
+      title: '終了時刻',
+      dataIndex: 'endTime',
+      key: 'endTime',
+      render: (text: string) => text || '-',
+    },
+    {
+      title: '実行時間',
+      dataIndex: 'duration',
+      key: 'duration',
+      render: (duration: number) =>
+        duration > 0 ? `${Math.floor(duration / 60)}分${duration % 60}秒` : '-',
+    },
+    {
+      title: 'ステータス',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => {
+        const colorMap: Record<string, string> = {
+          success: 'success',
+          failed: 'error',
+          running: 'processing',
+        };
+        const textMap: Record<string, string> = {
+          success: '成功',
+          failed: '失敗',
+          running: '実行中',
+        };
+        return <Tag color={colorMap[status]}>{textMap[status]}</Tag>;
+      },
+    },
+    {
+      title: '実行者',
+      dataIndex: 'executor',
+      key: 'executor',
+    },
+    {
+      title: 'アクション',
+      key: 'action',
+      render: (_: any, record: any) => (
+        <Link href={`/logs/${record.id}`}>
+          <Button type="link" size="small">
+            ログ
+          </Button>
+        </Link>
+      ),
+    },
+  ];
+
+  const tabItems = [
+    {
+      key: 'basic',
+      label: '基本情報',
+      children: (
+        <Row gutter={[24, 24]}>
+          <Col xs={24} lg={12}>
+            <Card title="実行設定">
+              <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    実行タイプ
+                  </Text>
+                  <Text strong>{job.executionType === 'python' ? 'Python' : 'Shell'}</Text>
+                </div>
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    スクリプトパス
+                  </Text>
+                  <div
+                    style={{
+                      fontFamily: 'monospace',
+                      fontSize: '14px',
+                      backgroundColor: '#f5f5f5',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      marginTop: '4px',
+                    }}
+                  >
+                    {job.scriptPath}
+                  </div>
+                </div>
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    作業ディレクトリ
+                  </Text>
+                  <div
+                    style={{
+                      fontFamily: 'monospace',
+                      fontSize: '14px',
+                      backgroundColor: '#f5f5f5',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      marginTop: '4px',
+                    }}
+                  >
+                    /var/jobs
+                  </div>
+                </div>
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Text type="secondary" style={{ display: 'block' }}>
+                      タイムアウト
+                    </Text>
+                    <Text strong>{job.timeout}分</Text>
+                  </Col>
+                  <Col span={12}>
+                    <Text type="secondary" style={{ display: 'block' }}>
+                      リトライ回数
+                    </Text>
+                    <Text strong>{job.retryCount}回</Text>
+                  </Col>
+                </Row>
+              </Space>
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={12}>
+            <Card title="環境変数">
+              <Space direction="vertical" style={{ width: '100%' }} size="small">
+                {[
+                  { key: 'DB_HOST', value: 'localhost' },
+                  { key: 'DB_PORT', value: '5432' },
+                  { key: 'LOG_LEVEL', value: 'INFO' },
+                ].map((env) => (
+                  <div
+                    key={env.key}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '8px',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    <span style={{ fontFamily: 'monospace', fontSize: '14px' }}>{env.key}</span>
+                    <span style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: 600 }}>{env.value}</span>
+                  </div>
+                ))}
+              </Space>
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={12}>
+            <Card title="通知設定">
+              <Space direction="vertical">
+                <Checkbox checked disabled>
+                  失敗時にメール通知
+                </Checkbox>
+                <Checkbox checked disabled>
+                  失敗時にSlack通知
+                </Checkbox>
+                <div style={{ marginTop: '16px' }}>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    通知先
+                  </Text>
+                  <Text>dev-team@example.com</Text>
+                  <br />
+                  <Text>#alerts</Text>
+                </div>
+              </Space>
+            </Card>
+          </Col>
+        </Row>
+      ),
+    },
+    {
+      key: 'schedule',
+      label: 'スケジュール',
+      children: (
+        <Row gutter={[24, 24]}>
+          <Col xs={24} lg={12}>
+            <Card title="スケジュール設定">
+              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    Cron式
+                  </Text>
+                  <div
+                    style={{
+                      fontSize: '18px',
+                      fontFamily: 'monospace',
+                      padding: '12px',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '4px',
+                      marginTop: '8px',
+                    }}
+                  >
+                    {job.schedule}
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '14px', display: 'block', marginTop: '8px' }}>
+                    毎日午前2時に実行
+                  </Text>
+                </div>
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    有効期間
+                  </Text>
+                  <Text>開始: 2025-01-01</Text>
+                  <br />
+                  <Text>終了: 未設定</Text>
+                </div>
+              </Space>
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={12}>
+            <Card title="次回実行予定" extra={<Text type="secondary">今後5回分</Text>}>
+              <Space direction="vertical" style={{ width: '100%' }}>
+                {[1, 2, 3, 4, 5].map((day) => (
+                  <div
+                    key={day}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      padding: '8px 0',
+                      borderBottom: day < 5 ? '1px solid #f0f0f0' : 'none',
+                    }}
+                  >
+                    <Text type="secondary">第{day}回</Text>
+                    <Text>2025-11-{12 + day} 02:00:00</Text>
+                  </div>
+                ))}
+              </Space>
+            </Card>
+          </Col>
+        </Row>
+      ),
+    },
+    {
+      key: 'dependencies',
+      label: '依存関係',
+      children: (
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Row gutter={[24, 24]}>
+            <Col xs={24} lg={12}>
+              <Card title="先行ジョブ" extra={<Text type="secondary">このジョブの前に実行</Text>}>
+                <Card hoverable style={{ borderRadius: '8px' }}>
+                  <Text strong style={{ display: 'block' }}>
+                    データ取得ジョブ
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: '14px' }}>
+                    開発チーム
+                  </Text>
+                </Card>
+              </Card>
+            </Col>
+
+            <Col xs={24} lg={12}>
+              <Card title="後続ジョブ" extra={<Text type="secondary">このジョブの後に実行</Text>}>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Card hoverable style={{ borderRadius: '8px' }}>
+                    <Text strong style={{ display: 'block' }}>
+                      レポート生成
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: '14px' }}>
+                      営業チーム
+                    </Text>
+                  </Card>
+                  <Card hoverable style={{ borderRadius: '8px' }}>
+                    <Text strong style={{ display: 'block' }}>
+                      通知送信
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: '14px' }}>
+                      営業チーム
+                    </Text>
+                  </Card>
+                </Space>
+              </Card>
+            </Col>
+          </Row>
+
+          <Card title="DAG図" extra={<Text type="secondary">依存関係の可視化</Text>}>
+            <div
+              style={{
+                padding: '32px',
+                backgroundColor: '#f5f5f5',
+                borderRadius: '8px',
+                textAlign: 'center',
+              }}
+            >
+              <Text type="secondary">依存関係のビジュアル図がここに表示されます</Text>
+              <div
+                style={{
+                  marginTop: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '16px',
+                }}
+              >
+                <div
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#e6f7ff',
+                    color: '#1890ff',
+                    borderRadius: '4px',
+                  }}
+                >
+                  データ取得
+                </div>
+                <span style={{ fontSize: '24px' }}>→</span>
+                <div
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#f6ffed',
+                    color: '#52c41a',
+                    borderRadius: '4px',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {job.name}
+                </div>
+                <span style={{ fontSize: '24px' }}>→</span>
+                <div
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#f9f0ff',
+                    color: '#722ed1',
+                    borderRadius: '4px',
+                  }}
+                >
+                  レポート生成
+                </div>
+              </div>
+            </div>
+          </Card>
+        </Space>
+      ),
+    },
+    {
+      key: 'history',
+      label: '実行履歴',
+      children: (
+        <Card title="実行履歴" extra={<Text type="secondary">直近100件</Text>}>
+          <Table columns={historyColumns} dataSource={jobHistory} rowKey="id" pagination={{ pageSize: 10 }} />
+        </Card>
+      ),
+    },
+    {
+      key: 'stats',
+      label: '統計',
+      children: (
+        <Row gutter={[24, 24]}>
+          <Col xs={24} lg={8}>
+            <Card title="成功率">
+              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                {[
+                  { label: '過去7日', value: 95.2 },
+                  { label: '過去30日', value: 93.8 },
+                  { label: '全期間', value: 94.5 },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <Text type="secondary">{item.label}</Text>
+                      <Text strong style={{ fontSize: '18px', color: '#52c41a' }}>
+                        {item.value}%
+                      </Text>
+                    </div>
+                    <Progress percent={item.value} strokeColor="#52c41a" showInfo={false} />
+                  </div>
+                ))}
+              </Space>
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={8}>
+            <Card title="実行時間">
+              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    平均実行時間
+                  </Text>
+                  <Title level={3} style={{ margin: 0 }}>
+                    15分23秒
+                  </Title>
+                </div>
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    最長実行時間
+                  </Text>
+                  <Text strong style={{ fontSize: '18px' }}>
+                    28分45秒
+                  </Text>
+                </div>
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    最短実行時間
+                  </Text>
+                  <Text strong style={{ fontSize: '18px' }}>
+                    12分10秒
+                  </Text>
+                </div>
+              </Space>
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={8}>
+            <Card title="実行回数">
+              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    過去7日
+                  </Text>
+                  <Title level={3} style={{ margin: 0 }}>
+                    7回
+                  </Title>
+                </div>
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    過去30日
+                  </Text>
+                  <Text strong style={{ fontSize: '18px' }}>
+                    30回
+                  </Text>
+                </div>
+                <div>
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    全期間
+                  </Text>
+                  <Text strong style={{ fontSize: '18px' }}>
+                    365回
+                  </Text>
+                </div>
+              </Space>
+            </Card>
+          </Col>
+        </Row>
+      ),
+    },
   ];
 
   return (
-    <div className="space-y-6">
+    <div style={{ padding: '24px' }}>
       {/* ヘッダー部 */}
-      <Card>
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center space-x-3 mb-2">
-              <h1 className="text-3xl font-bold text-gray-900">{job.name}</h1>
-              <Badge variant={job.status === 'enabled' ? 'success' : 'default'}>
+      <Card style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', gap: '12px' }}>
+              <Title level={2} style={{ margin: 0 }}>
+                {job.name}
+              </Title>
+              <Tag color={job.status === 'enabled' ? 'success' : 'default'}>
                 {job.status === 'enabled' ? '有効' : '無効'}
-              </Badge>
-              <Badge variant={job.lastExecutionStatus === 'success' ? 'success' : job.lastExecutionStatus === 'failed' ? 'error' : 'warning'}>
-                {job.lastExecutionStatus === 'success' ? '成功' : job.lastExecutionStatus === 'failed' ? '失敗' : '実行中'}
-              </Badge>
+              </Tag>
+              <Tag
+                color={
+                  job.lastExecutionStatus === 'success'
+                    ? 'success'
+                    : job.lastExecutionStatus === 'failed'
+                    ? 'error'
+                    : 'processing'
+                }
+              >
+                {job.lastExecutionStatus === 'success'
+                  ? '成功'
+                  : job.lastExecutionStatus === 'failed'
+                  ? '失敗'
+                  : '実行中'}
+              </Tag>
             </div>
-            <p className="text-gray-600 mb-3">{job.description}</p>
-            <div className="flex items-center space-x-4 text-sm">
-              <span className="flex items-center text-gray-500">
-                <span className="mr-1">👥</span> {job.team}
-              </span>
-              <span className="flex items-center space-x-1">
-                {job.tags.map((tag) => (
-                  <Badge key={tag} variant="info">
-                    {tag}
-                  </Badge>
-                ))}
-              </span>
-            </div>
+            <Text type="secondary" style={{ display: 'block', marginBottom: '12px' }}>
+              {job.description}
+            </Text>
+            <Space>
+              <Text type="secondary">
+                <span style={{ marginRight: '4px' }}>👥</span>
+                {job.team}
+              </Text>
+              {job.tags.map((tag) => (
+                <Tag key={tag} color="blue">
+                  {tag}
+                </Tag>
+              ))}
+            </Space>
           </div>
-          <div className="flex space-x-2">
-            <Button>今すぐ実行</Button>
+          <Space>
+            <Button type="primary">今すぐ実行</Button>
             <Link href={`/jobs/${job.id}/edit`}>
-              <Button variant="secondary">編集</Button>
+              <Button>編集</Button>
             </Link>
-            <Button variant="ghost">複製</Button>
-            <Button variant="danger">削除</Button>
-          </div>
+            <Button>複製</Button>
+            <Button danger>削除</Button>
+          </Space>
         </div>
       </Card>
 
       {/* タブナビゲーション */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
-                py-4 px-1 border-b-2 font-medium text-sm
-                ${
-                  activeTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }
-              `}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* タブコンテンツ */}
-      {activeTab === 'basic' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader title="実行設定" />
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium text-gray-700">実行タイプ</label>
-                <p className="text-sm text-gray-900 mt-1">{job.executionType === 'python' ? 'Python' : 'Shell'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">スクリプトパス</label>
-                <p className="text-sm text-gray-900 mt-1 font-mono bg-gray-50 p-2 rounded">
-                  {job.scriptPath}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">作業ディレクトリ</label>
-                <p className="text-sm text-gray-900 mt-1 font-mono bg-gray-50 p-2 rounded">/var/jobs</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">タイムアウト</label>
-                  <p className="text-sm text-gray-900 mt-1">{job.timeout}分</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">リトライ回数</label>
-                  <p className="text-sm text-gray-900 mt-1">{job.retryCount}回</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader title="環境変数" />
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <span className="text-sm font-mono text-gray-700">DB_HOST</span>
-                <span className="text-sm font-mono text-gray-900">localhost</span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <span className="text-sm font-mono text-gray-700">DB_PORT</span>
-                <span className="text-sm font-mono text-gray-900">5432</span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <span className="text-sm font-mono text-gray-700">LOG_LEVEL</span>
-                <span className="text-sm font-mono text-gray-900">INFO</span>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader title="通知設定" />
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <input type="checkbox" checked readOnly className="mr-2" />
-                <span className="text-sm text-gray-700">失敗時にメール通知</span>
-              </div>
-              <div className="flex items-center">
-                <input type="checkbox" checked readOnly className="mr-2" />
-                <span className="text-sm text-gray-700">失敗時にSlack通知</span>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">通知先</label>
-                <p className="text-sm text-gray-900 mt-1">dev-team@example.com</p>
-                <p className="text-sm text-gray-900">#alerts</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {activeTab === 'schedule' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader title="スケジュール設定" />
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Cron式</label>
-                <p className="text-lg font-mono text-gray-900 mt-2 p-3 bg-gray-50 rounded">{job.schedule}</p>
-                <p className="text-sm text-gray-500 mt-2">毎日午前2時に実行</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">有効期間</label>
-                <p className="text-sm text-gray-900 mt-1">開始: 2025-01-01</p>
-                <p className="text-sm text-gray-900">終了: 未設定</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader title="次回実行予定" subtitle="今後5回分" />
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map((day) => (
-                <div key={day} className="flex items-center justify-between p-2 border-b border-gray-100 last:border-0">
-                  <span className="text-sm text-gray-700">第{day}回</span>
-                  <span className="text-sm text-gray-900">2025-11-{12 + day} 02:00:00</span>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {activeTab === 'dependencies' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader title="先行ジョブ" subtitle="このジョブの前に実行" />
-            <div className="space-y-2">
-              <div className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                <p className="font-medium text-gray-900">データ取得ジョブ</p>
-                <p className="text-sm text-gray-500">開発チーム</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader title="後続ジョブ" subtitle="このジョブの後に実行" />
-            <div className="space-y-2">
-              <div className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                <p className="font-medium text-gray-900">レポート生成</p>
-                <p className="text-sm text-gray-500">営業チーム</p>
-              </div>
-              <div className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                <p className="font-medium text-gray-900">通知送信</p>
-                <p className="text-sm text-gray-500">営業チーム</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="lg:col-span-2">
-            <CardHeader title="DAG図" subtitle="依存関係の可視化" />
-            <div className="p-8 bg-gray-50 rounded-lg text-center">
-              <p className="text-gray-500">依存関係のビジュアル図がここに表示されます</p>
-              <div className="mt-4 flex items-center justify-center space-x-4">
-                <div className="px-4 py-2 bg-blue-100 text-blue-800 rounded">データ取得</div>
-                <span className="text-2xl">→</span>
-                <div className="px-4 py-2 bg-green-100 text-green-800 rounded font-bold">{job.name}</div>
-                <span className="text-2xl">→</span>
-                <div className="px-4 py-2 bg-purple-100 text-purple-800 rounded">レポート生成</div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {activeTab === 'history' && (
-        <div className="space-y-4">
-          <Card>
-            <CardHeader title="実行履歴" subtitle="直近100件" />
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">実行ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">開始時刻</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">終了時刻</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">実行時間</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ステータス</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">実行者</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">アクション</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {jobHistory.map((history) => (
-                    <tr key={history.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-mono text-gray-900">{history.id}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{history.startTime}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{history.endTime || '-'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        {history.duration > 0 ? `${Math.floor(history.duration / 60)}分${history.duration % 60}秒` : '-'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant={history.status === 'success' ? 'success' : history.status === 'failed' ? 'error' : 'warning'}>
-                          {history.status === 'success' ? '成功' : history.status === 'failed' ? '失敗' : '実行中'}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{history.executor}</td>
-                      <td className="px-4 py-3">
-                        <Link href={`/logs/${history.id}`}>
-                          <Button size="sm" variant="ghost">ログ</Button>
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {activeTab === 'stats' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader title="成功率" />
-            <div className="space-y-3">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-600">過去7日</span>
-                  <span className="text-lg font-bold text-green-600">95.2%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '95.2%' }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-600">過去30日</span>
-                  <span className="text-lg font-bold text-green-600">93.8%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '93.8%' }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-600">全期間</span>
-                  <span className="text-lg font-bold text-green-600">94.5%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '94.5%' }}></div>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader title="実行時間" />
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-600">平均実行時間</p>
-                <p className="text-2xl font-bold text-gray-900">15分23秒</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">最長実行時間</p>
-                <p className="text-lg text-gray-900">28分45秒</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">最短実行時間</p>
-                <p className="text-lg text-gray-900">12分10秒</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader title="実行回数" />
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-600">過去7日</p>
-                <p className="text-2xl font-bold text-gray-900">7回</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">過去30日</p>
-                <p className="text-lg text-gray-900">30回</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">全期間</p>
-                <p className="text-lg text-gray-900">365回</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
+      <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
     </div>
   );
 }
