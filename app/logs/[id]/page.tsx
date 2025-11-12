@@ -7,8 +7,9 @@ export function generateStaticParams() {
   }));
 }
 
-export default function LogDetailPage({ params }: { params: { id: string } }) {
-  const execution = mockExecutionHistory.find((e) => e.id === params.id) || mockExecutionHistory[0];
+export default async function LogDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const execution = mockExecutionHistory.find((e) => e.id === id) || mockExecutionHistory[0];
 
   return <LogDetailClient execution={execution} />;
 }

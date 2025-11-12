@@ -7,8 +7,9 @@ export function generateStaticParams() {
   }));
 }
 
-export default function JobDetailPage({ params }: { params: { id: string } }) {
-  const job = mockJobs.find((j) => j.id === params.id) || mockJobs[0];
+export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const job = mockJobs.find((j) => j.id === id) || mockJobs[0];
 
   return <JobDetailClient job={job} />;
 }

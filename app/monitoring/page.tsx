@@ -1,140 +1,173 @@
 'use client';
 
-import { Card, CardHeader } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Card, Tag, Button, Select, Row, Col, Progress, Typography, Space, Statistic } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
 import { mockJobs } from '@/lib/mock-data';
 import { useState } from 'react';
+
+const { Title, Text, Paragraph } = Typography;
 
 export default function MonitoringPage() {
   const runningJobs = mockJobs.filter((j) => j.lastExecutionStatus === 'running');
   const [updateInterval, setUpdateInterval] = useState('10');
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div style={{ padding: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">実行中ジョブ監視</h1>
-          <p className="text-gray-600 mt-1">リアルタイムでジョブを監視</p>
+          <Title level={2} style={{ margin: 0 }}>
+            実行中ジョブ監視
+          </Title>
+          <Text type="secondary">リアルタイムでジョブを監視</Text>
         </div>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-600">自動更新間隔:</span>
-          <select
+        <Space>
+          <Text>自動更新間隔:</Text>
+          <Select
             value={updateInterval}
-            onChange={(e) => setUpdateInterval(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="5">5秒</option>
-            <option value="10">10秒</option>
-            <option value="30">30秒</option>
-            <option value="manual">手動</option>
-          </select>
-          <Button size="sm" variant="secondary">
-            🔄 更新
-          </Button>
-        </div>
+            onChange={setUpdateInterval}
+            style={{ width: 120 }}
+            options={[
+              { value: '5', label: '5秒' },
+              { value: '10', label: '10秒' },
+              { value: '30', label: '30秒' },
+              { value: 'manual', label: '手動' },
+            ]}
+          />
+          <Button icon={<ReloadOutlined />}>更新</Button>
+        </Space>
       </div>
 
       {/* 実行中ジョブカード */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Row gutter={[24, 24]}>
         {runningJobs.map((job) => (
-          <Card key={job.id} className="border-l-4 border-l-blue-500">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900">{job.name}</h3>
-                <p className="text-sm text-gray-500">{job.team}</p>
-              </div>
-              <Badge variant="warning">実行中</Badge>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-gray-600">開始時刻</span>
-                  <span className="font-medium text-gray-900">{job.lastExecutionTime}</span>
+          <Col xs={24} lg={12} key={job.id}>
+            <Card style={{ borderLeft: '4px solid #1890ff' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <Title level={4} style={{ margin: 0 }}>
+                    {job.name}
+                  </Title>
+                  <Text type="secondary">{job.team}</Text>
                 </div>
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-gray-600">経過時間</span>
-                  <span className="font-medium text-gray-900">5分23秒</span>
-                </div>
+                <Tag color="processing">実行中</Tag>
               </div>
 
-              {/* プログレスバー */}
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-gray-600">進捗状況</span>
-                  <span className="text-gray-900">34%</span>
+              <Space direction="vertical" style={{ width: '100%' }} size="large">
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <Text type="secondary">開始時刻</Text>
+                    <Text strong>{job.lastExecutionTime}</Text>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Text type="secondary">経過時間</Text>
+                    <Text strong>5分23秒</Text>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+
+                {/* プログレスバー */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <Text type="secondary">進捗状況</Text>
+                    <Text>34%</Text>
+                  </div>
+                  <Progress percent={34} status="active" />
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    予想残り時間: 10分
+                  </Text>
+                </div>
+
+                {/* リソース使用状況 */}
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Card size="small" style={{ backgroundColor: '#f5f5f5' }}>
+                      <Statistic title="CPU使用率" value={45} suffix="%" valueStyle={{ fontSize: '24px' }} />
+                    </Card>
+                  </Col>
+                  <Col span={12}>
+                    <Card size="small" style={{ backgroundColor: '#f5f5f5' }}>
+                      <Statistic title="メモリ使用" value="2.1GB" valueStyle={{ fontSize: '24px' }} />
+                    </Card>
+                  </Col>
+                </Row>
+
+                {/* ライブログ */}
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                    最新ログ
+                  </Text>
                   <div
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                    style={{ width: '34%' }}
-                  ></div>
+                    style={{
+                      backgroundColor: '#1f1f1f',
+                      color: '#52c41a',
+                      padding: '12px',
+                      borderRadius: '4px',
+                      fontFamily: 'monospace',
+                      fontSize: '12px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div>[14:05:23] Processing record 5,234...</div>
+                    <div>[14:05:24] Processing record 5,235...</div>
+                    <div>[14:05:25] Processing record 5,236...</div>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">予想残り時間: 10分</p>
-              </div>
 
-              {/* リソース使用状況 */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-2 bg-gray-50 rounded">
-                  <p className="text-xs text-gray-600">CPU使用率</p>
-                  <p className="text-lg font-bold text-gray-900">45%</p>
-                </div>
-                <div className="p-2 bg-gray-50 rounded">
-                  <p className="text-xs text-gray-600">メモリ使用</p>
-                  <p className="text-lg font-bold text-gray-900">2.1GB</p>
-                </div>
-              </div>
-
-              {/* ライブログ */}
-              <div>
-                <p className="text-xs font-medium text-gray-700 mb-1">最新ログ</p>
-                <div className="bg-gray-900 text-green-400 p-2 rounded font-mono text-xs overflow-hidden">
-                  <p>[14:05:23] Processing record 5,234...</p>
-                  <p>[14:05:24] Processing record 5,235...</p>
-                  <p>[14:05:25] Processing record 5,236...</p>
-                </div>
-              </div>
-
-              {/* アクションボタン */}
-              <div className="flex space-x-2 pt-2">
-                <Button size="sm" variant="ghost" className="flex-1">
-                  ライブログ表示
-                </Button>
-                <Button size="sm" variant="danger" className="flex-1">
-                  キャンセル
-                </Button>
-              </div>
-            </div>
-          </Card>
+                {/* アクションボタン */}
+                <Space style={{ width: '100%' }}>
+                  <Button type="default" style={{ flex: 1 }}>
+                    ライブログ表示
+                  </Button>
+                  <Button danger style={{ flex: 1 }}>
+                    キャンセル
+                  </Button>
+                </Space>
+              </Space>
+            </Card>
+          </Col>
         ))}
 
         {runningJobs.length === 0 && (
-          <div className="lg:col-span-2 text-center py-12">
-            <p className="text-gray-500 text-lg">現在実行中のジョブはありません</p>
-          </div>
+          <Col span={24}>
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <Text type="secondary" style={{ fontSize: '18px' }}>
+                現在実行中のジョブはありません
+              </Text>
+            </div>
+          </Col>
         )}
-      </div>
+      </Row>
 
       {/* 待機中ジョブ */}
-      <Card>
-        <CardHeader title="待機中ジョブ" subtitle="依存関係またはリソース制限により待機中" />
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">データクリーニング</p>
-              <p className="text-sm text-gray-500">開発チーム • 依存ジョブ待機中</p>
+      <Card title="待機中ジョブ" style={{ marginTop: '24px' }}>
+        <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>
+          依存関係またはリソース制限により待機中
+        </Text>
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Card size="small" style={{ borderRadius: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ flex: 1 }}>
+                <Text strong>データクリーニング</Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: '14px' }}>
+                  開発チーム • 依存ジョブ待機中
+                </Text>
+              </div>
+              <Tag>待機中</Tag>
             </div>
-            <Badge variant="default">待機中</Badge>
-          </div>
-          <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">レポート生成</p>
-              <p className="text-sm text-gray-500">営業チーム • リソース制限</p>
+          </Card>
+          <Card size="small" style={{ borderRadius: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ flex: 1 }}>
+                <Text strong>レポート生成</Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: '14px' }}>
+                  営業チーム • リソース制限
+                </Text>
+              </div>
+              <Tag>待機中</Tag>
             </div>
-            <Badge variant="default">待機中</Badge>
-          </div>
-        </div>
+          </Card>
+        </Space>
       </Card>
     </div>
   );
