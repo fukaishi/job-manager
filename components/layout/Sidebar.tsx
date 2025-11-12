@@ -11,6 +11,7 @@ import {
   CalendarOutlined,
   TeamOutlined,
   SettingOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -19,6 +20,7 @@ const { Title, Text } = Typography;
 const navigation = [
   { name: 'ダッシュボード', href: '/dashboard', icon: <DashboardOutlined /> },
   { name: 'ジョブ一覧', href: '/jobs', icon: <UnorderedListOutlined /> },
+  { name: '本日実行予定', href: '/today', icon: <ClockCircleOutlined /> },
   { name: '実行履歴', href: '/history', icon: <HistoryOutlined /> },
   { name: '実行中ジョブ', href: '/monitoring', icon: <SyncOutlined /> },
   { name: 'スケジュール', href: '/schedule', icon: <CalendarOutlined /> },

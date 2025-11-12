@@ -42,6 +42,21 @@ export interface User {
   team: string;
 }
 
+export interface TodayScheduledJob {
+  id: string;
+  jobId: string;
+  jobName: string;
+  team: string;
+  scheduledStartTime: string;
+  actualStartTime?: string;
+  endTime?: string;
+  estimatedEndTime: string;
+  duration?: number;
+  status: 'scheduled' | 'running_normal' | 'running_delayed' | 'waiting_normal' | 'waiting_delayed' | 'completed_success' | 'completed_error';
+  executor: string;
+  dependsOn?: string[]; // 依存するジョブID
+}
+
 export const mockJobs: Job[] = [
   {
     id: '1',
@@ -197,6 +212,123 @@ export const mockCurrentUser: User = {
   role: 'engineer',
   team: '開発チーム',
 };
+
+export const mockTodayScheduledJobs: TodayScheduledJob[] = [
+  {
+    id: 'today-1',
+    jobId: '3',
+    jobName: 'バックアップジョブ',
+    team: 'インフラチーム',
+    scheduledStartTime: '2025-11-12 00:00:00',
+    actualStartTime: '2025-11-12 00:00:00',
+    endTime: '2025-11-12 00:45:12',
+    estimatedEndTime: '2025-11-12 01:00:00',
+    duration: 2712,
+    status: 'completed_error',
+    executor: '自動',
+  },
+  {
+    id: 'today-2',
+    jobId: '1',
+    jobName: 'データ同期ジョブ',
+    team: '開発チーム',
+    scheduledStartTime: '2025-11-12 02:00:00',
+    actualStartTime: '2025-11-12 02:00:00',
+    endTime: '2025-11-12 02:15:23',
+    estimatedEndTime: '2025-11-12 03:00:00',
+    duration: 923,
+    status: 'completed_success',
+    executor: '自動',
+  },
+  {
+    id: 'today-3',
+    jobId: '4',
+    jobName: 'ログ集計ジョブ',
+    team: '開発チーム',
+    scheduledStartTime: '2025-11-12 06:00:00',
+    actualStartTime: '2025-11-12 06:00:00',
+    endTime: '2025-11-12 06:25:45',
+    estimatedEndTime: '2025-11-12 06:30:00',
+    duration: 1545,
+    status: 'completed_success',
+    executor: '自動',
+  },
+  {
+    id: 'today-4',
+    jobId: '2',
+    jobName: 'レポート生成',
+    team: '営業チーム',
+    scheduledStartTime: '2025-11-12 09:00:00',
+    actualStartTime: '2025-11-12 09:05:00',
+    estimatedEndTime: '2025-11-12 09:30:00',
+    status: 'running_delayed',
+    executor: '自動',
+    dependsOn: ['today-3'],
+  },
+  {
+    id: 'today-5',
+    jobId: '5',
+    jobName: '通知送信',
+    team: '営業チーム',
+    scheduledStartTime: '2025-11-12 10:00:00',
+    actualStartTime: '2025-11-12 10:00:00',
+    estimatedEndTime: '2025-11-12 10:15:00',
+    status: 'running_normal',
+    executor: '自動',
+  },
+  {
+    id: 'today-6',
+    jobId: '1',
+    jobName: 'データベースメンテナンス',
+    team: 'インフラチーム',
+    scheduledStartTime: '2025-11-12 12:00:00',
+    estimatedEndTime: '2025-11-12 13:00:00',
+    status: 'waiting_delayed',
+    executor: '自動',
+    dependsOn: ['today-4'],
+  },
+  {
+    id: 'today-7',
+    jobId: '3',
+    jobName: 'データエクスポート',
+    team: '開発チーム',
+    scheduledStartTime: '2025-11-12 14:00:00',
+    estimatedEndTime: '2025-11-12 14:30:00',
+    status: 'waiting_normal',
+    executor: '自動',
+    dependsOn: ['today-5'],
+  },
+  {
+    id: 'today-8',
+    jobId: '2',
+    jobName: '月次レポート作成',
+    team: '営業チーム',
+    scheduledStartTime: '2025-11-12 16:00:00',
+    estimatedEndTime: '2025-11-12 17:00:00',
+    status: 'scheduled',
+    executor: '自動',
+  },
+  {
+    id: 'today-9',
+    jobId: '4',
+    jobName: 'セキュリティスキャン',
+    team: 'インフラチーム',
+    scheduledStartTime: '2025-11-12 18:00:00',
+    estimatedEndTime: '2025-11-12 19:00:00',
+    status: 'scheduled',
+    executor: '自動',
+  },
+  {
+    id: 'today-10',
+    jobId: '1',
+    jobName: '夜間バッチ処理',
+    team: '開発チーム',
+    scheduledStartTime: '2025-11-12 22:00:00',
+    estimatedEndTime: '2025-11-12 23:30:00',
+    status: 'scheduled',
+    executor: '自動',
+  },
+];
 
 export const mockLogs = `[2025-11-12 02:00:00] INFO: Starting data sync job
 [2025-11-12 02:00:01] INFO: Connecting to database...
