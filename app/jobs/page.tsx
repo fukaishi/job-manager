@@ -55,6 +55,12 @@ export default function JobsPage() {
       render: (team: string) => <Tag>{team}</Tag>,
     },
     {
+      title: 'Conf',
+      dataIndex: 'conf',
+      key: 'conf',
+      render: (text: string) => <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{text}</span>,
+    },
+    {
       title: 'ステータス',
       dataIndex: 'status',
       key: 'status',

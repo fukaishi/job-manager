@@ -47,7 +47,10 @@ export default function MonitoringPage() {
                   <Title level={4} style={{ margin: 0 }}>
                     {job.name}
                   </Title>
-                  <Text type="secondary">{job.team}</Text>
+                  <Space direction="vertical" size={0}>
+                    <Text type="secondary">{job.team}</Text>
+                    <Text type="secondary" style={{ fontFamily: 'monospace', fontSize: 12 }}>{job.conf}</Text>
+                  </Space>
                 </div>
                 <Tag color="processing">実行中</Tag>
               </div>

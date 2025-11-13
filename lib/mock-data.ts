@@ -3,6 +3,7 @@ export interface Job {
   name: string;
   description: string;
   team: string;
+  conf: string;
   tags: string[];
   schedule: string;
   lastExecutionTime: string;
@@ -20,6 +21,7 @@ export interface ExecutionHistory {
   jobId: string;
   jobName: string;
   team: string;
+  conf: string;
   startTime: string;
   endTime: string;
   duration: number;
@@ -42,12 +44,29 @@ export interface User {
   team: string;
 }
 
+export interface TodayScheduledJob {
+  id: string;
+  jobId: string;
+  jobName: string;
+  team: string;
+  conf: string;
+  scheduledStartTime: string;
+  actualStartTime?: string;
+  endTime?: string;
+  estimatedEndTime: string;
+  duration?: number;
+  status: 'scheduled' | 'running_normal' | 'running_delayed' | 'waiting_normal' | 'waiting_delayed' | 'completed_success' | 'completed_error';
+  executor: string;
+  dependsOn?: string[]; // 依存するジョブID
+}
+
 export const mockJobs: Job[] = [
   {
     id: '1',
     name: 'データ同期ジョブ',
     description: '日次でデータベースを同期',
     team: '開発チーム',
+    conf: 'dev_internal.conf',
     tags: ['データ', '日次'],
     schedule: '0 2 * * *',
     lastExecutionTime: '2025-11-12 02:00:00',
@@ -64,6 +83,7 @@ export const mockJobs: Job[] = [
     name: 'レポート生成',
     description: '週次売上レポートを生成',
     team: '営業チーム',
+    conf: 'sales_yahoo.conf',
     tags: ['レポート', '週次'],
     schedule: '0 9 * * 1',
     lastExecutionTime: '2025-11-11 09:00:00',
@@ -80,6 +100,7 @@ export const mockJobs: Job[] = [
     name: 'バックアップジョブ',
     description: 'データベースのバックアップ',
     team: 'インフラチーム',
+    conf: 'infra_all_service.conf',
     tags: ['バックアップ', '日次'],
     schedule: '0 0 * * *',
     lastExecutionTime: '2025-11-12 00:00:00',
@@ -96,6 +117,7 @@ export const mockJobs: Job[] = [
     name: 'データクリーニング',
     description: '古いデータを削除',
     team: '開発チーム',
+    conf: 'dev_batch.conf',
     tags: ['クリーニング', '週次'],
     schedule: '0 3 * * 0',
     lastExecutionTime: '2025-11-10 03:00:00',
@@ -112,6 +134,7 @@ export const mockJobs: Job[] = [
     name: '通知送信',
     description: 'ユーザーに通知を送信',
     team: '営業チーム',
+    conf: 'sales_internal.conf',
     tags: ['通知', '時間毎'],
     schedule: '0 * * * *',
     lastExecutionTime: '2025-11-12 14:00:00',
@@ -131,6 +154,7 @@ export const mockExecutionHistory: ExecutionHistory[] = [
     jobId: '1',
     jobName: 'データ同期ジョブ',
     team: '開発チーム',
+    conf: 'dev_internal.conf',
     startTime: '2025-11-12 02:00:00',
     endTime: '2025-11-12 02:15:23',
     duration: 923,
@@ -142,6 +166,7 @@ export const mockExecutionHistory: ExecutionHistory[] = [
     jobId: '2',
     jobName: 'レポート生成',
     team: '営業チーム',
+    conf: 'sales_yahoo.conf',
     startTime: '2025-11-11 09:00:00',
     endTime: '2025-11-11 09:12:45',
     duration: 765,
@@ -153,6 +178,7 @@ export const mockExecutionHistory: ExecutionHistory[] = [
     jobId: '3',
     jobName: 'バックアップジョブ',
     team: 'インフラチーム',
+    conf: 'infra_all_service.conf',
     startTime: '2025-11-12 00:00:00',
     endTime: '2025-11-12 00:45:12',
     duration: 2712,
@@ -164,6 +190,7 @@ export const mockExecutionHistory: ExecutionHistory[] = [
     jobId: '1',
     jobName: 'データ同期ジョブ',
     team: '開発チーム',
+    conf: 'dev_internal.conf',
     startTime: '2025-11-11 02:00:00',
     endTime: '2025-11-11 02:14:56',
     duration: 896,
@@ -175,6 +202,7 @@ export const mockExecutionHistory: ExecutionHistory[] = [
     jobId: '5',
     jobName: '通知送信',
     team: '営業チーム',
+    conf: 'sales_internal.conf',
     startTime: '2025-11-12 14:00:00',
     endTime: '',
     duration: 0,
@@ -197,6 +225,133 @@ export const mockCurrentUser: User = {
   role: 'engineer',
   team: '開発チーム',
 };
+
+export const mockTodayScheduledJobs: TodayScheduledJob[] = [
+  {
+    id: 'today-1',
+    jobId: '3',
+    jobName: 'バックアップジョブ',
+    team: 'インフラチーム',
+    conf: 'infra_all_service.conf',
+    scheduledStartTime: '2025-11-12 00:00:00',
+    actualStartTime: '2025-11-12 00:00:00',
+    endTime: '2025-11-12 00:45:12',
+    estimatedEndTime: '2025-11-12 01:00:00',
+    duration: 2712,
+    status: 'completed_error',
+    executor: '自動',
+  },
+  {
+    id: 'today-2',
+    jobId: '1',
+    jobName: 'データ同期ジョブ',
+    team: '開発チーム',
+    conf: 'dev_internal.conf',
+    scheduledStartTime: '2025-11-12 02:00:00',
+    actualStartTime: '2025-11-12 02:00:00',
+    endTime: '2025-11-12 02:15:23',
+    estimatedEndTime: '2025-11-12 03:00:00',
+    duration: 923,
+    status: 'completed_success',
+    executor: '自動',
+  },
+  {
+    id: 'today-3',
+    jobId: '4',
+    jobName: 'ログ集計ジョブ',
+    team: '開発チーム',
+    conf: 'dev_batch.conf',
+    scheduledStartTime: '2025-11-12 06:00:00',
+    actualStartTime: '2025-11-12 06:00:00',
+    endTime: '2025-11-12 06:25:45',
+    estimatedEndTime: '2025-11-12 06:30:00',
+    duration: 1545,
+    status: 'completed_success',
+    executor: '自動',
+  },
+  {
+    id: 'today-4',
+    jobId: '2',
+    jobName: 'レポート生成',
+    team: '営業チーム',
+    conf: 'sales_yahoo.conf',
+    scheduledStartTime: '2025-11-12 09:00:00',
+    actualStartTime: '2025-11-12 09:05:00',
+    estimatedEndTime: '2025-11-12 09:30:00',
+    status: 'running_delayed',
+    executor: '自動',
+    dependsOn: ['today-3'],
+  },
+  {
+    id: 'today-5',
+    jobId: '5',
+    jobName: '通知送信',
+    team: '営業チーム',
+    conf: 'sales_internal.conf',
+    scheduledStartTime: '2025-11-12 10:00:00',
+    actualStartTime: '2025-11-12 10:00:00',
+    estimatedEndTime: '2025-11-12 10:15:00',
+    status: 'running_normal',
+    executor: '自動',
+  },
+  {
+    id: 'today-6',
+    jobId: '1',
+    jobName: 'データベースメンテナンス',
+    team: 'インフラチーム',
+    conf: 'dev_internal.conf',
+    scheduledStartTime: '2025-11-12 12:00:00',
+    estimatedEndTime: '2025-11-12 13:00:00',
+    status: 'waiting_delayed',
+    executor: '自動',
+    dependsOn: ['today-4'],
+  },
+  {
+    id: 'today-7',
+    jobId: '3',
+    jobName: 'データエクスポート',
+    team: '開発チーム',
+    conf: 'infra_all_service.conf',
+    scheduledStartTime: '2025-11-12 14:00:00',
+    estimatedEndTime: '2025-11-12 14:30:00',
+    status: 'waiting_normal',
+    executor: '自動',
+    dependsOn: ['today-5'],
+  },
+  {
+    id: 'today-8',
+    jobId: '2',
+    jobName: '月次レポート作成',
+    team: '営業チーム',
+    conf: 'sales_yahoo.conf',
+    scheduledStartTime: '2025-11-12 16:00:00',
+    estimatedEndTime: '2025-11-12 17:00:00',
+    status: 'scheduled',
+    executor: '自動',
+  },
+  {
+    id: 'today-9',
+    jobId: '4',
+    jobName: 'セキュリティスキャン',
+    team: 'インフラチーム',
+    conf: 'dev_batch.conf',
+    scheduledStartTime: '2025-11-12 18:00:00',
+    estimatedEndTime: '2025-11-12 19:00:00',
+    status: 'scheduled',
+    executor: '自動',
+  },
+  {
+    id: 'today-10',
+    jobId: '1',
+    jobName: '夜間バッチ処理',
+    team: '開発チーム',
+    conf: 'dev_internal.conf',
+    scheduledStartTime: '2025-11-12 22:00:00',
+    estimatedEndTime: '2025-11-12 23:30:00',
+    status: 'scheduled',
+    executor: '自動',
+  },
+];
 
 export const mockLogs = `[2025-11-12 02:00:00] INFO: Starting data sync job
 [2025-11-12 02:00:01] INFO: Connecting to database...
